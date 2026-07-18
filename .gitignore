@@ -1,0 +1,28 @@
+__pycache__
+*.pyc
+
+# 权重 / 模型目录
+longlive_models
+wan_models
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+
+# 数据 / 视频 / latent（扩展名双保险，防止 data/ 之外游离的大文件混入）
+data
+videos
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.npz
+*.npy
+
+# 训练产物(checkpoint 由 *.pt 规则覆盖,这里排除日志等其余文件)
+checkpoints/
+demo_out/
+*.log
+checkpoints_restore/
+.claude/
