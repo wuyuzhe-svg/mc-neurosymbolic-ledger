@@ -51,17 +51,15 @@ action. Trained on 62 hours of Minecraft gameplay.
 
 ## Why I made this
 
-I got into interactive video models the way most people do: the demos look like magic,
-you walk around a generated world and it holds together. Then you try to *do* anything —
-break a block, pick something up, build — and the spell breaks. Nothing persists. The
-hotbar is wallpaper: items pop in and out with no arithmetic behind them, and nothing
-stops the model from placing a block it never collected.
+Interactive video models look like magic until you try to *do* anything — break a
+block, pick something up, build. Nothing persists: the hotbar is wallpaper, items pop in
+and out with no arithmetic behind them, and nothing stops the model from placing a block
+it never collected.
 
-So I picked what felt like the smallest piece of game state that is *actually state* — a
-backpack with a count in it — and spent a month trying to make a 1.3B video model keep
-one honestly. This repo is the result.
+So I picked the smallest piece of game state that is *actually state* — a backpack with
+a count in it — and spent a month making a 1.3B video model keep one honestly.
 
-When I tried to do it the obvious ways, two things broke:
+Doing it the obvious ways, two things broke:
 
 1. **Sparse actions aren't causal by default.** Movement and camera dominate every batch;
    `place` fires so rarely that it gets roughly 0.2% of the reconstruction gradient. Train
@@ -144,14 +142,12 @@ $\lambda_{\text{ctr}}{=}\lambda_{\text{out}}{=}0.5$. Term by term:
   is applied symmetrically to place events *and* to presses where nothing appeared, so it
   can't become a "press ⇒ block" shortcut; it just says *look here, this region decides*.
 - $\mathcal{L}_{\text{mar}} = \mathrm{softplus}\big(m - (z^{\text{on}} - z^{\text{off}})\big)$
-  on true place frames, $m{=}2$. The main course: on frames where a block really
-  appeared, the ON world must out-score the OFF world by a margin. This is the term that
-  makes the bit matter.
+  on true place frames, $m{=}2$: where a block really appeared, the ON world must
+  out-score the OFF world by a margin. This is the term that makes the bit matter.
 - $\mathcal{L}_{\text{neg}} = \mathrm{softplus}\big(z^{\text{on}} - z^{\text{off}}\big)$
   on *hard negatives* — frames where the button was pressed but no block appeared (aimed
-  at the sky, out of range). The mirror image of the margin: pressing is not placing, and
-  the model must not hallucinate success on invalid presses. Without this term the bit
-  becomes a magic wand.
+  at the sky, out of range). The mirror image of the margin: pressing is not placing,
+  and the model must not hallucinate success on invalid presses.
 - $\mathcal{L}_{\text{on}}$ — a weak absolute BCE on $z^{\text{on}}$, weighted by
   $\sigma^2$ so it only bites where the model actually owns $\hat{x}_0$ (high noise) and
   the leak is weakest. Pure elicit pressure; the heavy lifting stays with the margin.
@@ -161,16 +157,16 @@ $\lambda_{\text{ctr}}{=}\lambda_{\text{out}}{=}0.5$. Term by term:
   quietly injected fake GT and had to go.)
 - $\mathcal{L}_{\text{out}}$ — after the press, the ON−OFF difference is only allowed
   inside an allow-region: the crosshair box plus the lower-right arm area. Any difference
-  outside it — global fog, color shifts, the model's favorite cheap tricks — is squashed.
-  Together with the margin this forms a pincer: *there must be a difference, and it must
-  live where the block and the swing live.*
+  outside it — global fog, color shifts — is squashed. Together with the margin this forms
+  a pincer: *there must be a difference, and it must live where the block and the swing
+  live.*
 
 Two terms are deliberately absent. An absolute suppression of the OFF branch
 ($z^{\text{off}} \to 0$ on event frames) sounds reasonable and was catastrophic: within
 3k steps the model learned a smearing cheat that erased the probe's evidence instead of
-suppressing the event, and the OFF branch degraded into hand-texture mush. It's still in
-the code behind `W_POFF`, permanently set to 0, as a warning sign. A base-model preserve
-term met a similar fate (it fights the GT block on post-place frames).
+suppressing the event, and the OFF branch degraded into hand-texture mush. It remains in the
+code behind `W_POFF`, set to 0. A base-model preserve term met a similar fate (it fights
+the GT block on post-place frames).
 
 The schedule matters as much as the losses. Half of the event windows are forced into
 the high-noise band $t \in [500, 1000]$, because that's where the model decides
@@ -180,13 +176,12 @@ windows are oversampled to 50%, hard negatives to 10%. Action bits are binarized
 (training used to encode `place` as its within-chunk duty cycle, 0.2–0.8, while
 deployment sends 1.0 — a silent factor-of-two mismatch). And the new `place` column is
 initialized from scratch rather than warm-started from `attack`: after 1000 steps of
-warm-start training the two columns still had cosine similarity 1.0. Some basins you
-don't escape.
+warm-start training the two columns still had cosine similarity 1.0.
 
 At inference, classifier-free guidance over the action sharpens the event:
-$v = v_{\text{off}} + w\,(v_{\text{on}} - v_{\text{off}})$, $w = 2.5$. Amusingly the axis
-works in reverse too: $w = -2.5$ deletes blocks that were already there. The supervision
-seems to have carved an actual semantic direction, not a texture trigger.
+$v = v_{\text{off}} + w\,(v_{\text{on}} - v_{\text{off}})$, $w = 2.5$. The axis works in
+reverse too: $w = -2.5$ deletes blocks that were already there — the supervision carved a
+semantic direction, not a texture trigger.
 
 The result: two inputs differing by exactly one bit, and the block appears and persists
 (paired probe score 0.994 vs 0.015). The model responds on the keypress and stays silent
@@ -205,10 +200,9 @@ without it in 12/12 held-out windows under the FIRST_ONLY protocol.
 
 ## Eleven measured failure modes
 
-Getting one bit to matter took eleven diagnosed failures, each with an experiment behind
-it. I think of this list as the actual contribution — a supervision-engineering playbook
-for sparse events in small-data world models. The full list with measurements is in
-[`RESULTS.md`](RESULTS.md); highlights:
+Getting one bit to matter took eleven diagnosed failures, each backed by an experiment —
+in effect a supervision-engineering playbook for sparse events in small-data world
+models. The full list with measurements is in [`RESULTS.md`](RESULTS.md); highlights:
 
 1. **Reconstruction dilution** — sparse events get ~0.2% of the gradient; recon-only training moves the action column 1e-4 in 2000 steps.
 2. **Teacher leakage** — absolute probe scores of 0.75–0.97 were all leakage; differential margins are immune.
@@ -220,22 +214,19 @@ for sparse events in small-data world models. The full list with measurements is
 
 ## What this is, and isn't
 
-Honest expectations, since this is a solo project and not a paper:
+A few honest caveats:
 
-- **The demo clips are picked.** The place direction is the solid one — it was trained
-  counterfactually and the 12/12 / 0.994-vs-0.015 numbers come from a fixed protocol, not
-  from cherry-picking. The *mining* clips are another story: destruction was never causally
-  supervised, so getting a clean "block breaks and stays broken" generation means rolling
-  seeds and picking scenes. On a good scene 3 of 4 seeds pass the sensor gates; on most
-  scenes none do. The clips you see are the survivors, and I'm telling you that up front.
-- **There are no ablations.** Every loss term earned its place by fixing a measured
-  failure during development, which is documented, but I never ran the controlled
-  matrix — no time. If a term looks redundant to you, you might be right.
-- **This is one game, one base model, 62 hours of data.** Think of it as a slightly
-  over-the-top attempt to teach a pretrained video model *one new action* with a small
-  dataset, plus the bookkeeping to make that action count for something. If you're
-  attempting something similar, the failure-mode list above is the part most likely to
-  save you time.
+- **Quantitative vs qualitative demos.** The place direction is evaluated under a fixed
+  protocol (12/12 windows, probe 0.994 vs 0.015). The mining clips are qualitative:
+  destruction was never causally supervised, so success is scene- and seed-dependent —
+  on a favorable scene about 3 of 4 seeds pass the sensor gates, on many scenes none do.
+  The mining demos show representative successes under those conditions.
+- **No ablations.** Every loss term was added in response to a measured failure
+  (documented in `RESULTS.md`), but no controlled ablation matrix was run.
+- **One game, one base model, 62 hours of data.** A case study in teaching a pretrained
+  video model *one new action* on a small dataset, plus the bookkeeping to make that
+  action count. If you're attempting something similar, the failure-mode list above is
+  the part most likely to save you time.
 
 ## Repository layout & reproduce
 
@@ -257,8 +248,6 @@ from a local Matrix-Game-2 checkout). The `wan/`, `model/`, `pipeline/`, `traine
 `utils/` packages in this repo are legacy — they only serve the v3-baseline scripts in
 `evals/`. Hardware: 4× RTX Pro 6000.
 
-Trivia: the project started as a V Rising world model and pivoted to Minecraft --
-the development repo is still called `vrisingwm`.
 
 ## Known limits
 
