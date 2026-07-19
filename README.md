@@ -254,9 +254,8 @@ from the repo root.
 
 The active pipeline runs entirely on Matrix-Game-2's code and weights (the scripts import
 from a local Matrix-Game-2 checkout). The `wan/`, `model/`, `pipeline/`, `trainer/`,
-`utils/` packages in this repo are the LongLive/Self-Forcing lineage the project started
-from — today they only serve the legacy v3-baseline scripts in `evals/`. Hardware:
-4× RTX Pro 6000.
+`utils/` packages in this repo are legacy — they only serve the v3-baseline scripts in
+`evals/`. Hardware: 4× RTX Pro 6000.
 
 Trivia: the project started as a V Rising world model and pivoted to Minecraft --
 the development repo is still called `vrisingwm`.
@@ -280,11 +279,9 @@ the development repo is still called `vrisingwm`.
 
 Built on [Matrix-Game-2](https://github.com/SkyworkAI/Matrix-Game) (base model and
 inference code), [Wan2.1](https://github.com/Wan-Video/Wan2.1) (architecture),
-[VPT](https://github.com/openai/Video-Pre-Training) (data),
-[Causal Forcing](https://github.com/thu-ml/CausalForcing) (recipe for the AR track), and
-[LongLive](https://github.com/NVlabs/LongLive) /
-[Self-Forcing](https://github.com/guandeh17/Self-Forcing) (the earlier chassis this
-project started on; still powers the v3 baseline). Thanks for their wonderful work.
+[VPT](https://github.com/openai/Video-Pre-Training) (data), and
+[Causal Forcing](https://github.com/thu-ml/CausalForcing) (recipe for the AR track).
+Thanks for their wonderful work.
 
 ## Citation
 
