@@ -249,21 +249,28 @@ hf download yuzhewu207/mc-neurosymbolic-ledger probe_mc44.pt --local-dir checkpo
 mv checkpoints/mc_probe44/probe_mc44.pt checkpoints/mc_probe44/best.pt
 hf download yuzhewu207/mc-neurosymbolic-ledger mine_id_head.pt --local-dir checkpoints/keep
 
-# one data segment (first frame + ground-truth action track for the demo script)
+# data segments the demos below use (first frames + ground-truth action tracks)
 hf download yuzhewu207/vrisingwm-mc-data --repo-type dataset --local-dir data \
-  --include "vpt_mc_352/Player1-f153ac423f61-20210905-123307/*"
+  --include "vpt_mc_352/Player1-f153ac423f61-20210905-123307/*" \
+  --include "vpt_mc_352/Player104-f153ac423f61-20210828-145315/*"
 
-# point the scripts at those locations and run
+# point the scripts at those locations
 export MG2_REPO=$PWD/Matrix-Game/Matrix-Game-2 MG2_WEIGHTS=$PWD/mg2_weights
 export MC_DATA=$PWD/data/vpt_mc_352 OUT_DIR=$PWD/out
-python demos/demo_ledger_minimal.py checkpoints/keep/ft_15000.pt Player1-f153ac423f61-20210905-123307 65
+
+# the three-act economy cycle linked above (mine +1 -> place -1 -> veto at zero)
+python demos/demo_economy.py
+
+# the "attack grass -> +1" demo from the top of this page
+ATAG=grassC47 ASEG=Player104-f153ac423f61-20210828-145315 AST=5 ASEED=47 AEND=15 \
+  python demos/demo_attack.py
 ```
 
-This generates the four-act lifecycle video (`out/ledger_demo_4act_*.mp4`): place with 2
-in stock (−1), break it back (+1), place again (−1), then a fourth place attempt that the
-ledger vetoes at zero. `demos/demo_economy.py` and `demos/demo_attack.py` run the same
-way (env-parameterized; see their docstrings). Training is `fire_v5.sh` (edit its paths
-+ `RESUME` first); data ingest from raw VPT is `ingest/vpt6xx_ingest.py`.
+The first command writes `out/economy_demo.mp4` — the three-act video linked under the
+frame strips. The second writes `out/attack_demo_grassC47.mp4`; sampling is seeded, so it
+regenerates the exact "attack grass" clip shown above, sensor readings and all
+(probe 0.57, `grass_block@0.99`). Training is `fire_v5.sh` (edit its paths + `RESUME`
+first); data ingest from raw VPT is `ingest/vpt6xx_ingest.py`.
 
 On the hotbar overlay: the count you see is **not generated** — it is rendered by the
 demo script from ledger state, flipping at the frame where the sensors report the event.
