@@ -280,6 +280,6 @@ Thanks for their wonderful work.
             Sparse Interaction Actions and a Neuro-Symbolic Ledger},
   author = {Wu, Yuzhe},
   year   = {2026},
-  note   = {https://github.com/wuyuzhe-svg/mc-neurosymbolic-ledger}
+  note   = {https://github.com/wyzardWu/mc-neurosymbolic-ledger}
 }
 ```
