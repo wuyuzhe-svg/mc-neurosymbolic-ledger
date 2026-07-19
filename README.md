@@ -88,7 +88,7 @@ not weights.
 </p>
 
 <p align="center">
-  <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/sensors.png" width="100%" alt="Inside the three sensors, on a real mining event"/>
+  <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/sensors_v2.png" width="100%" alt="Inside the three sensors, on a real mining event"/>
   <br/>
   <em>Inside the sensors, on a real mined block from the demos. <b>A</b>: a 2.5M-parameter
   CNN + temporal transformer reads the generated latents and scores every frame for mine /
@@ -198,19 +198,19 @@ without it in 12/12 held-out windows under the FIRST_ONLY protocol.
 | Economy cycle (mine +1 → place −1 → veto) | all three acts pass | `economy_demo.mp4` |
 | 4-act ledger lifecycle (place −1 / break +1 / place −1 / veto) | all four acts pass | `ledger_demo_4act_*.mp4` |
 
-## Eleven measured failure modes
+## Measured failure modes
 
 Getting one bit to matter took eleven diagnosed failures, each backed by an experiment —
 in effect a supervision-engineering playbook for sparse events in small-data world
 models. The full list with measurements is in [`RESULTS.md`](RESULTS.md); highlights:
 
-1. **Reconstruction dilution** — sparse events get ~0.2% of the gradient; recon-only training moves the action column 1e-4 in 2000 steps.
-2. **Teacher leakage** — absolute probe scores of 0.75–0.97 were all leakage; differential margins are immune.
-3. **Warm-init contamination** — initializing `place` from the `attack` column leaves cosine 1.0 after 1000 steps.
-4. **Behavioral echo** — keeping future action tracks lets the OFF branch get "scripted" into placing; the FIRST_ONLY protocol isolates it.
-5. **Anchor-free counterfactuals** — absolute suppression of the OFF branch learns smearing-based cheating within 3k steps.
-6. **CFG as a semantic axis** — w=+2.5 creates real blocks; w=−2.5 deletes even pre-existing ones.
-7. **Direction asymmetry** — appearance (place) is learnable counterfactually; removal (mine) was never causally supervised anywhere in the lineage and only emerges in-distribution. It is distance-dependent (blocks only break at arm's length) and context-sensitive: a synthetic frozen-camera attack scores probe ~0.1, while replaying the real human action track in the same scene scores 0.67–0.88. This is why mine credits carry a pixel-settlement backstop.
+- **Reconstruction dilution** — sparse events get ~0.2% of the gradient; recon-only training moves the action column 1e-4 in 2000 steps.
+- **Teacher leakage** — absolute probe scores of 0.75–0.97 were all leakage; differential margins are immune.
+- **Warm-init contamination** — initializing `place` from the `attack` column leaves cosine 1.0 after 1000 steps.
+- **Behavioral echo** — keeping future action tracks lets the OFF branch get "scripted" into placing; the FIRST_ONLY protocol isolates it.
+- **Anchor-free counterfactuals** — absolute suppression of the OFF branch learns smearing-based cheating within 3k steps.
+- **CFG as a semantic axis** — w=+2.5 creates real blocks; w=−2.5 deletes even pre-existing ones.
+- **Direction asymmetry** — appearance (place) is learnable counterfactually; removal (mine) was never causally supervised anywhere in the lineage and only emerges in-distribution. It is distance-dependent (blocks only break at arm's length) and context-sensitive: a synthetic frozen-camera attack scores probe ~0.1, while replaying the real human action track in the same scene scores 0.67–0.88. This is why mine credits carry a pixel-settlement backstop.
 
 ## What this is, and isn't
 
