@@ -10,13 +10,13 @@ action. Trained on 62 hours of Minecraft gameplay.
 
 <table>
 <tr>
-<td width="50%" align="center">
+<td width="50%" align="center" valign="top">
   <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/clip_mine_sand_3s.gif" alt="Mine sand: ledger credits +1"/>
   <br/><b>Attack sand → +1</b>. The model digs under an attack keypress. At the moment
   the block disappears, the what-head reads <code>sand@1.00</code> and the ledger credits
   +1 sand to the hotbar.
 </td>
-<td width="50%" align="center">
+<td width="50%" align="center" valign="top">
   <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/clip_attack_grass_c47.gif" alt="Attack a grass block: ledger credits +1"/>
   <br/><b>Attack grass → +1</b>. Different scene and item. The raised grass block is dug
   open; the event probe fires (0.57), pixel settlement confirms the removal, the what-head
@@ -26,12 +26,12 @@ action. Trained on 62 hours of Minecraft gameplay.
 </table>
 <table>
 <tr>
-<td width="50%" align="center">
+<td width="50%" align="center" valign="top">
   <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/clip_place_dirt_minus1.gif" alt="Place dirt: ledger debits to zero"/>
   <br/><b>Place dirt → −1</b>. With 1 dirt in stock the place key is allowed through;
   the block appears, the place probe confirms (1.0), and the ledger debits to zero.
 </td>
-<td width="50%" align="center">
+<td width="50%" align="center" valign="top">
   <img src="https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger/resolve/main/eval_assets/demo_ledger/clip_place_cobble_minus1.gif" alt="Place cobblestone: ledger debits to zero"/>
   <br/><b>Place cobblestone → −1</b>. Same protocol, different item and scene. The block
   fills the wall gap at the crosshair, the probe confirms (1.0), and the ledger debits
