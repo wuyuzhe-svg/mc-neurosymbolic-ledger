@@ -9,11 +9,11 @@ Mouse stays 2-dim (camera pitch/yaw). Everything else loads verbatim from base_m
 (missing=0/unexpected=0 at 6-dim; the only shimmed tensor is keyboard_embed.0.weight).
 """
 import os, sys, json, torch
-sys.path.insert(0, "/root/autodl-tmp/MatrixGame_repo/Matrix-Game-2")
+sys.path.insert(0, os.environ.get("MG2_REPO", "/root/autodl-tmp/MatrixGame_repo/Matrix-Game-2"))
 from safetensors.torch import load_file
 from wan.modules.model import WanModel
 
-MG2 = "/root/autodl-tmp/mg2_weights"
+MG2 = os.environ.get("MG2_WEIGHTS", "/root/autodl-tmp/mg2_weights")
 N_HELD = 40                            # held-item vocab (held_id in {-1(none),0..39}; aligns bag_counts)
 
 class LedgerInjector(torch.nn.Module):

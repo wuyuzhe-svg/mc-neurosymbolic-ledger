@@ -228,11 +228,50 @@ A few honest caveats:
   action count. If you're attempting something similar, the failure-mode list above is
   the part most likely to save you time.
 
-## Repository layout & reproduce
+## Reproduce
 
 Weights, eval videos, the what-head dataset, and git bundles are all on
-[HuggingFace](https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger). Run scripts
-from the repo root.
+[HuggingFace](https://huggingface.co/yuzhewu207/mc-neurosymbolic-ledger). To run the
+ledger demo end-to-end (single GPU, bf16; tested on 96 GB, needs well under that):
+
+```bash
+git clone https://github.com/wyzardWu/mc-neurosymbolic-ledger && cd mc-neurosymbolic-ledger
+pip install -r requirements.txt
+
+# Matrix-Game-2 code + base weights (VAE, CLIP, DiT config)
+git clone https://github.com/SkyworkAI/Matrix-Game
+hf download Skywork/Matrix-Game-2.0 --local-dir mg2_weights
+
+# this project's weights: fine-tuned generator, event probe, what-head
+hf download yuzhewu207/mc-neurosymbolic-ledger bidirectional_ft15000.pt --local-dir checkpoints/keep
+mv checkpoints/keep/bidirectional_ft15000.pt checkpoints/keep/ft_15000.pt
+hf download yuzhewu207/mc-neurosymbolic-ledger probe_mc44.pt --local-dir checkpoints/mc_probe44
+mv checkpoints/mc_probe44/probe_mc44.pt checkpoints/mc_probe44/best.pt
+hf download yuzhewu207/mc-neurosymbolic-ledger mine_id_head.pt --local-dir checkpoints/keep
+
+# one data segment (first frame + ground-truth action track for the demo script)
+hf download yuzhewu207/vrisingwm-mc-data --repo-type dataset --local-dir data \
+  --include "vpt_mc_352/Player1-f153ac423f61-20210905-123307/*"
+
+# point the scripts at those locations and run
+export MG2_REPO=$PWD/Matrix-Game/Matrix-Game-2 MG2_WEIGHTS=$PWD/mg2_weights
+export MC_DATA=$PWD/data/vpt_mc_352 OUT_DIR=$PWD/out
+python demos/demo_ledger_minimal.py checkpoints/keep/ft_15000.pt Player1-f153ac423f61-20210905-123307 65
+```
+
+This generates the four-act lifecycle video (`out/ledger_demo_4act_*.mp4`): place with 2
+in stock (−1), break it back (+1), place again (−1), then a fourth place attempt that the
+ledger vetoes at zero. `demos/demo_economy.py` and `demos/demo_attack.py` run the same
+way (env-parameterized; see their docstrings). Training is `fire_v5.sh` (edit its paths
++ `RESUME` first); data ingest from raw VPT is `ingest/vpt6xx_ingest.py`.
+
+On the hotbar overlay: the count you see is **not generated** — it is rendered by the
+demo script from ledger state, flipping at the frame where the sensors report the event.
+The `Ledger` class and the HUD compositing sit at the bottom of
+`demos/demo_ledger_minimal.py`; feeding it a different starting inventory is a one-line
+change to its initial count.
+
+## Repository layout
 
 | Path | What it does |
 |---|---|
